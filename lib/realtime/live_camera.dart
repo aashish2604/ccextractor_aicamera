@@ -25,6 +25,14 @@ class _LiveFeedState extends State<LiveFeed> {
     );
   }
 
+  setRecognitions(recognitions, imageHeight, imageWidth) {
+    setState(() {
+      _recognitions = recognitions;
+      _imageHeight = imageHeight;
+      _imageWidth = imageWidth;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,11 +43,21 @@ class _LiveFeedState extends State<LiveFeed> {
   Widget build(BuildContext context) {
     Size screen = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Zoom Cam"),
-        ),
-        body: Center(
-          child: const Text('Checking model load'),
-        ));
+      appBar: AppBar(
+        title: const Text("Zoom Cam"),
+      ),
+      body: Stack(
+        children: <Widget>[
+          CameraFeed(widget.cameras, setRecognitions),
+          BoundingBox(
+            _recognitions ?? [],
+            math.max(_imageHeight, _imageWidth),
+            math.min(_imageHeight, _imageWidth),
+            screen.height,
+            screen.width,
+          ),
+        ],
+      ),
+    );
   }
 }
