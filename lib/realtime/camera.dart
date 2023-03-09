@@ -1,3 +1,4 @@
+import 'package:ccextractor_zoom/services/zoom_smoothener.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,6 +19,7 @@ class CameraFeed extends StatefulWidget {
 class _CameraFeedState extends State<CameraFeed> {
   CameraController? controller;
   bool isDetecting = false;
+  List<double> zoomLevels = [];
 
   double getZoomFactor(dynamic re, double maxZoom) {
     double screenH = MediaQuery.of(context).size.height;
@@ -29,15 +31,27 @@ class _CameraFeedState extends State<CameraFeed> {
     double boxAspectRatio = width / height;
     double screenAspectRatio = screenW / screenH;
     double zoomFactor = 1.0;
-    if (boxAspectRatio > screenAspectRatio) {
-      if (x > 0.06 && ((x + width) < 0.94)) zoomFactor = 0.85 / width;
+    bool isObjectCentered = x > 0.06 &&
+        (x + width) < 0.94 &&
+        y > 0.06 &&
+        (y + height) < 0.94 &&
+        (y + height) > 0.45;
+    if (true) {
+      if (boxAspectRatio > screenAspectRatio) {
+        zoomFactor = 0.85 / width;
+      } else {
+        zoomFactor = 0.85 / height;
+      }
+      zoomFactor = math.max(1.0, zoomFactor);
+      zoomFactor = math.min(maxZoom, zoomFactor);
+      print(zoomFactor);
+      zoomLevels.add(zoomFactor);
+      double smoothedZoomFactor = smoothZoomLevel(zoomLevels);
+      print(smoothedZoomFactor);
+      return smoothedZoomFactor;
     } else {
-      if (y > 0.06 && ((y + height) < 0.94)) zoomFactor = 0.85 / height;
+      return 1.0;
     }
-    zoomFactor = math.max(1.0, zoomFactor);
-    zoomFactor = math.min(maxZoom, zoomFactor);
-    print(zoomFactor);
-    return zoomFactor;
   }
 
   @override
@@ -79,7 +93,7 @@ class _CameraFeedState extends State<CameraFeed> {
                   bool isfound = false;
                   int recognitionIndex = -1;
                   for (int i = 0; i < recognitions.length; i++) {
-                    if (recognitions[i]['detectedClass'] == 'book') {
+                    if (recognitions[i]['detectedClass'] == 'tv') {
                       isfound = true;
                       recognitionIndex = i;
                       print(recognitions[i]);
@@ -92,17 +106,11 @@ class _CameraFeedState extends State<CameraFeed> {
                             : [],
                         img.height,
                         img.width);
-                    double x = recognitions[recognitionIndex]['rect']['x'];
-                    double y = recognitions[recognitionIndex]['rect']['y'];
-                    double width = recognitions[recognitionIndex]['rect']['w'];
-                    double height = recognitions[recognitionIndex]['rect']['h'];
                     double zoomLevel =
                         getZoomFactor(recognitions[recognitionIndex], maxZoom);
-                    print('found');
                     controller!.setZoomLevel(zoomLevel);
                   } else {
                     controller!.setZoomLevel(1.0);
-                    print('not found');
                     widget.setRecognitions([], img.height, img.width);
                   }
 
