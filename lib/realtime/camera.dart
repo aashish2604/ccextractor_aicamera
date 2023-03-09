@@ -19,6 +19,27 @@ class _CameraFeedState extends State<CameraFeed> {
   CameraController? controller;
   bool isDetecting = false;
 
+  double getZoomFactor(dynamic re) {
+    // double screenH = MediaQuery.of(context).size.height;
+    // double screenW = MediaQuery.of(context).size.width;
+    // int previewH = math.max(imgHt, imgWt);
+    // int previewW = math.min(imgHt, imgWt);
+    // double xFactor = re['rect']['w'];
+    // double yFactor = re['rect']['h'];
+    // //add zoom factor by checking if the width and the height of the object correspond to magnified value
+    // double reciFactor = math.max(xFactor, yFactor);
+    // double zoomFactor = ((1.0 / reciFactor) * 0.8);
+    // return zoomFactor >= 1.0 ? zoomFactor : 1.0;
+    double x = re['rect']['x'];
+    double y = re['rect']['y'];
+    double width = re['rect']['w'];
+    double height = re['rect']['h'];
+    bool fitswd = (x > 0.06) && ((x + width) < 0.94);
+    if (width > 0.85 || height > 0.85) return 1.0;
+    if (fitswd) return 2.0;
+    return 1.0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,9 +71,35 @@ class _CameraFeedState extends State<CameraFeed> {
                 imageStd: 127.5,
                 numResultsPerClass: 1,
                 threshold: 0.4,
-              ).then((recognitions) async {
+              ).then((recognitions) {
                 if (recognitions != null) {
-                  widget.setRecognitions(recognitions, img.height, img.width);
+                  bool isfound = false;
+                  controller!.setZoomLevel(1.0);
+                  int recognitionIndex = -1;
+                  for (int i = 0; i < recognitions.length; i++) {
+                    if (recognitions[i]['detectedClass'] == 'tv') {
+                      isfound = true;
+                      recognitionIndex = i;
+                      print(recognitions[i]);
+                    }
+                  }
+                  if (isfound) {
+                    widget.setRecognitions(
+                        recognitionIndex != -1
+                            ? [recognitions[recognitionIndex]]
+                            : [],
+                        img.height,
+                        img.width);
+                    double x = recognitions[recognitionIndex]['rect']['x'];
+                    double y = recognitions[recognitionIndex]['rect']['y'];
+                    double width = recognitions[recognitionIndex]['rect']['w'];
+                    double height = recognitions[recognitionIndex]['rect']['h'];
+                    double zoomingFactor =
+                        getZoomFactor(recognitions[recognitionIndex]);
+                    controller!.setZoomLevel(zoomingFactor);
+                  } else {
+                    widget.setRecognitions([], img.height, img.width);
+                  }
 
                   isDetecting = false;
                 }
