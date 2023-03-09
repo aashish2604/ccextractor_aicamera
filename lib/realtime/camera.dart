@@ -19,25 +19,25 @@ class _CameraFeedState extends State<CameraFeed> {
   CameraController? controller;
   bool isDetecting = false;
 
-  double getZoomFactor(dynamic re) {
-    // double screenH = MediaQuery.of(context).size.height;
-    // double screenW = MediaQuery.of(context).size.width;
-    // int previewH = math.max(imgHt, imgWt);
-    // int previewW = math.min(imgHt, imgWt);
-    // double xFactor = re['rect']['w'];
-    // double yFactor = re['rect']['h'];
-    // //add zoom factor by checking if the width and the height of the object correspond to magnified value
-    // double reciFactor = math.max(xFactor, yFactor);
-    // double zoomFactor = ((1.0 / reciFactor) * 0.8);
-    // return zoomFactor >= 1.0 ? zoomFactor : 1.0;
+  double getZoomFactor(dynamic re, double maxZoom) {
+    double screenH = MediaQuery.of(context).size.height;
+    double screenW = MediaQuery.of(context).size.width;
     double x = re['rect']['x'];
     double y = re['rect']['y'];
     double width = re['rect']['w'];
     double height = re['rect']['h'];
-    bool fitswd = (x > 0.06) && ((x + width) < 0.94);
-    if (width > 0.85 || height > 0.85) return 1.0;
-    if (fitswd) return 2.0;
-    return 1.0;
+    double boxAspectRatio = width / height;
+    double screenAspectRatio = screenW / screenH;
+    double zoomFactor = 1.0;
+    if (boxAspectRatio > screenAspectRatio) {
+      if (x > 0.06 && ((x + width) < 0.94)) zoomFactor = 0.85 / width;
+    } else {
+      if (y > 0.06 && ((y + height) < 0.94)) zoomFactor = 0.85 / height;
+    }
+    zoomFactor = math.max(1.0, zoomFactor);
+    zoomFactor = math.min(maxZoom, zoomFactor);
+    print(zoomFactor);
+    return zoomFactor;
   }
 
   @override
@@ -50,7 +50,10 @@ class _CameraFeedState extends State<CameraFeed> {
         widget.cameras[0],
         ResolutionPreset.high,
       );
-      controller!.initialize().then((_) {
+      double maxZoom = 1.0;
+      controller!.initialize().then((_) async {
+        maxZoom = await controller!.getMaxZoomLevel();
+        print(maxZoom);
         if (!mounted) {
           return;
         }
@@ -74,10 +77,9 @@ class _CameraFeedState extends State<CameraFeed> {
               ).then((recognitions) {
                 if (recognitions != null) {
                   bool isfound = false;
-                  controller!.setZoomLevel(1.0);
                   int recognitionIndex = -1;
                   for (int i = 0; i < recognitions.length; i++) {
-                    if (recognitions[i]['detectedClass'] == 'tv') {
+                    if (recognitions[i]['detectedClass'] == 'book') {
                       isfound = true;
                       recognitionIndex = i;
                       print(recognitions[i]);
@@ -94,10 +96,13 @@ class _CameraFeedState extends State<CameraFeed> {
                     double y = recognitions[recognitionIndex]['rect']['y'];
                     double width = recognitions[recognitionIndex]['rect']['w'];
                     double height = recognitions[recognitionIndex]['rect']['h'];
-                    double zoomingFactor =
-                        getZoomFactor(recognitions[recognitionIndex]);
-                    controller!.setZoomLevel(zoomingFactor);
+                    double zoomLevel =
+                        getZoomFactor(recognitions[recognitionIndex], maxZoom);
+                    print('found');
+                    controller!.setZoomLevel(zoomLevel);
                   } else {
+                    controller!.setZoomLevel(1.0);
+                    print('not found');
                     widget.setRecognitions([], img.height, img.width);
                   }
 
