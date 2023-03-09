@@ -10,7 +10,9 @@ typedef Callback = void Function(List<dynamic> list, int h, int w);
 class CameraFeed extends StatefulWidget {
   final List<CameraDescription> cameras;
   final Callback setRecognitions;
-  const CameraFeed(this.cameras, this.setRecognitions, {super.key});
+  final String object;
+  const CameraFeed(this.cameras, this.setRecognitions,
+      {super.key, required this.object});
 
   @override
   State<CameraFeed> createState() => _CameraFeedState();
@@ -93,7 +95,7 @@ class _CameraFeedState extends State<CameraFeed> {
                   bool isfound = false;
                   int recognitionIndex = -1;
                   for (int i = 0; i < recognitions.length; i++) {
-                    if (recognitions[i]['detectedClass'] == 'tv') {
+                    if (recognitions[i]['detectedClass'] == widget.object) {
                       isfound = true;
                       recognitionIndex = i;
                       print(recognitions[i]);

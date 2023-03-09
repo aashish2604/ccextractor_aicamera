@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-class BoundingBox extends StatelessWidget {
+class DetectionBox extends StatelessWidget {
   final List<dynamic> results;
   final int previewH;
   final int previewW;
   final double screenH;
   final double screenW;
 
-  const BoundingBox(
+  const DetectionBox(
       this.results, this.previewH, this.previewW, this.screenH, this.screenW,
       {super.key});
 

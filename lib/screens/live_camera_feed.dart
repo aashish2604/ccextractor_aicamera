@@ -1,6 +1,6 @@
 import 'package:camera/camera.dart';
-import 'package:ccextractor_zoom/realtime/bounding_box.dart';
-import 'package:ccextractor_zoom/realtime/camera.dart';
+import 'package:ccextractor_zoom/screens/detection_box.dart';
+import 'package:ccextractor_zoom/screens/camera_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -8,7 +8,8 @@ import 'package:tflite/tflite.dart';
 
 class LiveFeed extends StatefulWidget {
   final List<CameraDescription> cameras;
-  const LiveFeed({super.key, required this.cameras});
+  final String object;
+  const LiveFeed({super.key, required this.cameras, required this.object});
   @override
   State<LiveFeed> createState() => _LiveFeedState();
 }
@@ -44,12 +45,16 @@ class _LiveFeedState extends State<LiveFeed> {
     Size screen = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Zoom Cam"),
+        title: const Text("AI Camera"),
       ),
       body: Stack(
         children: <Widget>[
-          CameraFeed(widget.cameras, setRecognitions),
-          BoundingBox(
+          CameraFeed(
+            widget.cameras,
+            setRecognitions,
+            object: widget.object,
+          ),
+          DetectionBox(
             _recognitions ?? [],
             math.max(_imageHeight, _imageWidth),
             math.min(_imageHeight, _imageWidth),
