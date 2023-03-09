@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ccextractor_zoom">
    <application
-        android:label="ccextractor_zoom"
+        android:label="CCExtractor AI Camera"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
