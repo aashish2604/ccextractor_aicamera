@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:ccextractor_zoom/screens/gallery.dart';
+import 'package:ccextractor_zoom/screens/preview_image.dart';
+import 'package:ccextractor_zoom/services/image_processing.dart';
 import 'package:ccextractor_zoom/services/zoom_smoothener.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -22,6 +27,8 @@ class _CameraFeedState extends State<CameraFeed> {
   CameraController? controller;
   bool isDetecting = false;
   List<double> zoomLevels = [];
+  late double finalSmoothenedZoomFactor;
+  Image? previewImage;
 
   double getZoomFactor(dynamic re, double maxZoom) {
     double screenH = MediaQuery.of(context).size.height;
@@ -50,15 +57,15 @@ class _CameraFeedState extends State<CameraFeed> {
       zoomLevels.add(zoomFactor);
       double smoothedZoomFactor = smoothZoomLevel(zoomLevels);
       print(smoothedZoomFactor);
+      finalSmoothenedZoomFactor = smoothedZoomFactor;
       return smoothedZoomFactor;
     } else {
       return 1.0;
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void initializeCamera() {
+    finalSmoothenedZoomFactor = 1.0;
     if (widget.cameras.isEmpty) {
       Fluttertoast.showToast(msg: "No cameras found!");
     } else {
@@ -69,7 +76,8 @@ class _CameraFeedState extends State<CameraFeed> {
       double maxZoom = 1.0;
       controller!.initialize().then((_) async {
         maxZoom = await controller!.getMaxZoomLevel();
-        print(maxZoom);
+        await controller!.setFlashMode(FlashMode.off);
+        previewImage = await ImageProcessing().getPreviewImage();
         if (!mounted) {
           return;
         }
@@ -129,6 +137,12 @@ class _CameraFeedState extends State<CameraFeed> {
   }
 
   @override
+  void initState() {
+    initializeCamera();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     controller?.dispose();
     super.dispose();
@@ -149,12 +163,74 @@ class _CameraFeedState extends State<CameraFeed> {
     var screenRatio = screenH / screenW;
     var previewRatio = previewH / previewW;
 
-    return OverflowBox(
-      maxHeight:
-          screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
-      maxWidth:
-          screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
-      child: CameraPreview(controller!),
+    return Stack(
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: OverflowBox(
+            maxHeight: screenRatio > previewRatio
+                ? screenH
+                : screenW / previewW * previewH,
+            maxWidth: screenRatio > previewRatio
+                ? screenH / previewH * previewW
+                : screenW,
+            child: CameraPreview(controller!),
+          ),
+        ),
+        Positioned(
+          left: 20.0,
+          bottom: 20.0,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context)
+                  .push(
+                      MaterialPageRoute(builder: (context) => const Gallery()))
+                  .then((value) => initializeCamera());
+            },
+            child: SizedBox(
+              height: 60,
+              width: 60,
+              child: previewImage,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 15,
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Center(
+              child: GestureDetector(
+                onTap: () async {
+                  print('taking image');
+                  try {
+                    // await controller!.initialize();
+                    await controller!.stopImageStream();
+                    // await controller!.lockCaptureOrientation();
+                    await controller!.setZoomLevel(finalSmoothenedZoomFactor);
+                    await controller!.takePicture().then((value) {
+                      controller!.setFlashMode(FlashMode.off);
+                      controller!.setZoomLevel(finalSmoothenedZoomFactor);
+                      File imageFile = File(value.path);
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              builder: (context) =>
+                                  PreviewImage(previewImageFile: imageFile)))
+                          .then((value) => initializeCamera());
+                    });
+                  } on CameraException catch (e) {
+                    print(e.description);
+                  }
+                },
+                child: const CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
 }
