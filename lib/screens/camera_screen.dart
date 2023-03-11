@@ -118,9 +118,15 @@ class _CameraFeedState extends State<CameraFeed> {
                         img.width);
                     double zoomLevel =
                         getZoomFactor(recognitions[recognitionIndex], maxZoom);
-                    controller!.setZoomLevel(zoomLevel);
+                    if (controller!.value.isInitialized) {
+                      controller!.debugCheckIsDisposed();
+                      controller!.setZoomLevel(zoomLevel);
+                    }
                   } else {
-                    controller!.setZoomLevel(1.0);
+                    if (controller!.value.isInitialized) {
+                      controller!.debugCheckIsDisposed();
+                      controller!.setZoomLevel(1.0);
+                    }
                     widget.setRecognitions([], img.height, img.width);
                   }
 
@@ -207,10 +213,10 @@ class _CameraFeedState extends State<CameraFeed> {
                     // await controller!.initialize();
                     await controller!.stopImageStream();
                     // await controller!.lockCaptureOrientation();
-                    await controller!.setZoomLevel(finalSmoothenedZoomFactor);
                     await controller!.takePicture().then((value) {
-                      controller!.setFlashMode(FlashMode.off);
-                      controller!.setZoomLevel(finalSmoothenedZoomFactor);
+                      // controller!.dispose();
+                      // controller!.setFlashMode(FlashMode.off);
+                      // controller!.setZoomLevel(finalSmoothenedZoomFactor);
                       File imageFile = File(value.path);
                       Navigator.of(context)
                           .push(MaterialPageRoute(
