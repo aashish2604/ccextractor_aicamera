@@ -206,8 +206,13 @@ class _CameraFeedState extends State<CameraFeed> {
           child: SizedBox(
             width: MediaQuery.of(context).size.width,
             child: Center(
-              child: GestureDetector(
-                onTap: () async {
+              child: FloatingActionButton(
+                backgroundColor: Colors.white,
+                child: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: Colors.black,
+                ),
+                onPressed: () async {
                   print('taking image');
                   try {
                     // await controller!.initialize();
@@ -228,10 +233,6 @@ class _CameraFeedState extends State<CameraFeed> {
                     print(e.description);
                   }
                 },
-                child: const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white,
-                ),
               ),
             ),
           ),

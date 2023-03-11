@@ -19,8 +19,12 @@ class Gallery extends StatelessWidget {
         await directory.list().forEach((element) {
           File file = File(element.path);
           // Image imageFile = Image.file(file);
-          images.add(file);
+          if (file.path.split('/').last.contains('.')) {
+            images.add(file);
+          }
         });
+        // images.remove(images[0]);
+        // images.remove(images[0]);
         return images;
       } on Exception catch (e) {
         Fluttertoast.showToast(msg: "Nothing found");

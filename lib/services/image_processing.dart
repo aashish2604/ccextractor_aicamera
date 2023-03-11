@@ -22,12 +22,15 @@ class ImageProcessing {
     try {
       Directory directory = await getApplicationDocumentsDirectory();
       final fetchedFile = await directory.list().last;
-      File file = File(fetchedFile.path);
-      Image image = Image.file(
-        file,
-        fit: BoxFit.fill,
-      );
-      return image;
+      if (fetchedFile.path.split('/').last.contains('.')) {
+        File file = File(fetchedFile.path);
+        Image image = Image.file(
+          file,
+          fit: BoxFit.fill,
+        );
+        return image;
+      }
+      return null;
     } on Exception catch (e) {
       Fluttertoast.showToast(msg: "Nothing found");
       return null;
