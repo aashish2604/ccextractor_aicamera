@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:ccextractor_zoom/screens/gallery.dart';
 import 'package:ccextractor_zoom/screens/live_camera_feed.dart';
 import 'package:ccextractor_zoom/utils/app_consts.dart';
 import 'package:flutter/material.dart';
@@ -78,6 +79,13 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => const Gallery()));
+        },
+        child: const Icon(Icons.image_outlined),
       ),
     );
   }
