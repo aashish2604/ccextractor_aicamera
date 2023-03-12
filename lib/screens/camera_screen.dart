@@ -118,15 +118,9 @@ class _CameraFeedState extends State<CameraFeed> {
                         img.width);
                     double zoomLevel =
                         getZoomFactor(recognitions[recognitionIndex], maxZoom);
-                    if (controller!.value.isInitialized) {
-                      controller!.debugCheckIsDisposed();
-                      controller!.setZoomLevel(zoomLevel);
-                    }
+                    controller!.setZoomLevel(zoomLevel);
                   } else {
-                    if (controller!.value.isInitialized) {
-                      controller!.debugCheckIsDisposed();
-                      controller!.setZoomLevel(1.0);
-                    }
+                    controller!.setZoomLevel(1.0);
                     widget.setRecognitions([], img.height, img.width);
                   }
 

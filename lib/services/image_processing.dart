@@ -21,14 +21,20 @@ class ImageProcessing {
   Future<Image?> getPreviewImage() async {
     try {
       Directory directory = await getApplicationDocumentsDirectory();
-      final fetchedFile = await directory.list().last;
-      if (fetchedFile.path.split('/').last.contains('.')) {
-        File file = File(fetchedFile.path);
-        Image image = Image.file(
-          file,
-          fit: BoxFit.fill,
-        );
-        return image;
+      int i = 0;
+      await directory.list().forEach((element) {
+        if (element.path.split('/').last.contains('.')) i++;
+      });
+      if (i > 0) {
+        final fetchedFile = await directory.list().last;
+        if (fetchedFile.path.split('/').last.contains('.')) {
+          File file = File(fetchedFile.path);
+          Image image = Image.file(
+            file,
+            fit: BoxFit.fill,
+          );
+          return image;
+        }
       }
       return null;
     } on Exception catch (e) {
