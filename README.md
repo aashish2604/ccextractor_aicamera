@@ -4,7 +4,7 @@ This app detects the object from the list of specified objects and auto-zooms to
 
 # Demo 
 
-![Demo Gif](https://s11.gifyu.com/images/SQm5O.gif)
+![Demo Gif](https://s11.gifyu.com/images/SQmoC.gif)
 
 # My Implementation
 
