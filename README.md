@@ -3,7 +3,8 @@
 This app detects the object from the list of specified objects and auto-zooms to fit them to the screen-size. The demo below will provide a better understanding of its functionalities and features.
 
 # Demo 
-
+ Since github does not allow any GIF of size greater than 5MB to be displayed in README.md. The video quality in demo below is reduced because of compression of GIF.
+ 
 ![Demo Gif](https://s12.gifyu.com/images/SQV4p.gif)
 
 # My Implementation
